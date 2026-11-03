@@ -1,9 +1,16 @@
 [
     {
-        "Protocol": "Both",
+        "Protocol": "TCP",
         "Port": 8787,
         "Ref": "ShardPort",
         "Name": "Shard Port",
-        "Description": "TCP: HTTP/WebSocket control (/ws, /health). UDP: voice router"
+        "Description": "HTTP/WebSocket control (/ws, /health). With a TLS proxy, keep this internal and expose the proxy port instead"
+    },
+    {
+        "Protocol": "UDP",
+        "Port": 8787,
+        "Ref": "UdpVoicePort",
+        "Name": "UDP Voice Port",
+        "Description": "UDP voice router. Must equal the port in the Public URL (e.g. 8443 when using the TLS proxy on 8443)"
     }
 ]
