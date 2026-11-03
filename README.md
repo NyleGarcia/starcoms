@@ -23,8 +23,8 @@ Choose **TLS Mode** under Configuration → Star Comms → TLS, click **Update**
 | Off | nothing | `http://your-host:8787` | Plain HTTP. Simplest |
 | Cloudflare Quick Tunnel | nothing | auto (`https://*.trycloudflare.com`) | Free, no account. The URL changes every start (the shard re-registers itself). Cloudflare says it's for testing, with no uptime guarantee |
 | Cloudflare Tunnel | Tunnel token | `https://your-tunnel-hostname` | Zero Trust → Networks → Tunnels → create (cloudflared), copy the token, add a public hostname → `http://localhost:8787`. Fixed URL; needs no TCP port forward |
-| Let's Encrypt | TLS Domain + Cloudflare API token | auto (`https://domain:<TLS Port>`) | Real cert issued and renewed automatically via the DNS-01 check. Token needs Zone:Read + DNS:Edit. Served on the TLS Port (default 8443). Choosing it accepts the Let's Encrypt terms |
+| Let's Encrypt | TLS Domain + DNS Provider + DNS API token | auto (`https://domain:<TLS Port>`) | Real cert issued and renewed automatically via the DNS-01 check. Providers: **Cloudflare** (token with Zone:Read + DNS:Edit) or **DigitalOcean** (personal access token with domain read/create/delete). Served on the TLS Port (default 8443). Choosing it accepts the Let's Encrypt terms |
 
 UDP voice never goes through TLS or a tunnel: forward the **UDP Voice Port** to the host in every mode. In tunnel modes the launcher detects the public IP for UDP automatically (override it with UDP Public Host). In Let's Encrypt mode, set UDP Voice Port to the same number as the TLS Port.
 
-Let's Encrypt with Cloudflare DNS is the only automatic option because the other checks need port 80/443, which the AMP panel's nginx usually holds and which AMP instances can't bind anyway.
+Let's Encrypt through a DNS provider API is the only automatic option because the other checks need port 80/443, which the AMP panel's nginx usually holds and which AMP instances can't bind anyway.

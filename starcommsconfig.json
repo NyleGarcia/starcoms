@@ -101,7 +101,7 @@
         "DisplayName": "TLS Mode",
         "Category": "Star Comms:radio",
         "Subcategory": "TLS:lock:2",
-        "Description": "How to serve HTTPS. Off = plain HTTP. Quick Tunnel = free Cloudflare tunnel with a random https URL each start, no account (testing). Cloudflare Tunnel = your own tunnel token and hostname. Let's Encrypt = real cert for your domain via Cloudflare DNS (choosing it accepts the Let's Encrypt terms), served on the TLS Port. Run Update after changing",
+        "Description": "How to serve HTTPS. Off = plain HTTP. Quick Tunnel = free Cloudflare tunnel with a random https URL each start, no account (testing). Cloudflare Tunnel = your own tunnel token and hostname. Let's Encrypt = real cert for your domain via Cloudflare or DigitalOcean DNS (choosing it accepts the Let's Encrypt terms), served on the TLS Port. Run Update after changing",
         "Keywords": "tls,ssl,https,certificate,cloudflare,tunnel,letsencrypt,certbot",
         "FieldName": "TlsMode",
         "InputType": "enum",
@@ -111,7 +111,7 @@
             "off": "Off (plain HTTP)",
             "quick": "Cloudflare Quick Tunnel (no account)",
             "cloudflare": "Cloudflare Tunnel (token)",
-            "acme": "Let's Encrypt (Cloudflare DNS)"
+            "acme": "Let's Encrypt (DNS API)"
         }
     },
     {
@@ -130,7 +130,7 @@
         "DisplayName": "TLS Domain",
         "Category": "Star Comms:radio",
         "Subcategory": "TLS:lock:2",
-        "Description": "Let's Encrypt mode: domain for the certificate. Its DNS must be on Cloudflare and point at this host",
+        "Description": "Let's Encrypt mode: domain for the certificate. Must resolve to this host, and its DNS must be on the DNS Provider below",
         "Keywords": "tls,domain,certificate",
         "FieldName": "TlsDomain",
         "InputType": "text",
@@ -140,14 +140,29 @@
         "EnumValues": {}
     },
     {
-        "DisplayName": "Cloudflare API Token",
+        "DisplayName": "DNS Provider",
         "Category": "Star Comms:radio",
         "Subcategory": "TLS:lock:2",
-        "Description": "Let's Encrypt mode: Cloudflare API token with Zone:Read and DNS:Edit for the TLS Domain's zone (used only to prove domain ownership via a TXT record)",
-        "Keywords": "cloudflare,api,token,dns",
-        "FieldName": "CloudflareApiToken",
+        "Description": "Let's Encrypt mode: where the TLS Domain's DNS is hosted. Used only to create a temporary _acme-challenge TXT record",
+        "Keywords": "dns,provider,cloudflare,digitalocean",
+        "FieldName": "DnsProvider",
+        "InputType": "enum",
+        "ParamFieldName": "DnsProvider",
+        "DefaultValue": "cloudflare",
+        "EnumValues": {
+            "cloudflare": "Cloudflare",
+            "digitalocean": "DigitalOcean"
+        }
+    },
+    {
+        "DisplayName": "DNS API Token",
+        "Category": "Star Comms:radio",
+        "Subcategory": "TLS:lock:2",
+        "Description": "Let's Encrypt mode: API token for the DNS Provider. Cloudflare: Zone:Read + DNS:Edit for the zone. DigitalOcean: personal access token with domain read/create/delete (or full write)",
+        "Keywords": "dns,api,token,cloudflare,digitalocean",
+        "FieldName": "DnsApiToken",
         "InputType": "Password",
-        "ParamFieldName": "CloudflareApiToken",
+        "ParamFieldName": "DnsApiToken",
         "DefaultValue": "",
         "EnumValues": {}
     },

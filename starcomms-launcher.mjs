@@ -3,7 +3,7 @@
 //   off        - plain shard, Public URL as configured
 //   quick      - Cloudflare quick tunnel (random https://*.trycloudflare.com, no account)
 //   cloudflare - Cloudflare named tunnel (STARCOMMS_CF_TUNNEL_TOKEN, Public URL = tunnel hostname)
-//   acme       - Let's Encrypt cert via DNS-01 (Cloudflare API token) + built-in TLS proxy
+//   acme       - Let's Encrypt cert via DNS-01 (Cloudflare or DigitalOcean DNS API token) + built-in TLS proxy
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -65,7 +65,7 @@ function run(name, cmd, args, childEnv, onLine) {
 // Secrets meant for the launcher never reach the shard process.
 function shardEnv(overrides) {
   const out = { ...env, ...overrides };
-  for (const key of ["STARCOMMS_CF_TUNNEL_TOKEN", "STARCOMMS_CF_API_TOKEN", "TUNNEL_TOKEN"]) delete out[key];
+  for (const key of ["STARCOMMS_CF_TUNNEL_TOKEN", "STARCOMMS_DNS_API_TOKEN", "TUNNEL_TOKEN"]) delete out[key];
   for (const [key, value] of Object.entries(out)) if (value === "") delete out[key];
   return out;
 }
@@ -128,25 +128,86 @@ async function startNamedTunnel() {
   startShard(udp);
 }
 
-// --- Let's Encrypt (DNS-01 through the Cloudflare API) ---
+// --- Let's Encrypt (DNS-01 through a DNS provider API) ---
 
-async function cfApi(path, init = {}) {
-  const res = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
-    ...init,
-    headers: { Authorization: `Bearer ${env.STARCOMMS_CF_API_TOKEN}`, "Content-Type": "application/json" }
-  });
-  const body = await res.json();
-  if (!body.success) throw new Error(`Cloudflare API ${path}: ${JSON.stringify(body.errors)}`);
-  return body.result;
+// Each provider: zone(domain) -> zone handle, create(zone, fqdn, value) -> record id, remove(zone, id).
+const dnsProviders = {
+  cloudflare: {
+    name: "Cloudflare",
+    async api(path, init = {}) {
+      const res = await fetch(`https://api.cloudflare.com/client/v4${path}`, {
+        ...init,
+        headers: { Authorization: `Bearer ${env.STARCOMMS_DNS_API_TOKEN}`, "Content-Type": "application/json" }
+      });
+      const body = await res.json();
+      if (!body.success) throw new Error(`Cloudflare API ${path}: ${JSON.stringify(body.errors)}`);
+      return body.result;
+    },
+    async zone(domain) {
+      for (const candidate of zoneCandidates(domain)) {
+        const zones = await this.api(`/zones?name=${candidate}`);
+        if (zones.length) return { id: zones[0].id, name: candidate };
+      }
+      throw new Error(`no Cloudflare zone found for ${domain} (token needs Zone:Read + DNS:Edit)`);
+    },
+    async create(zone, fqdn, value) {
+      const record = await this.api(`/zones/${zone.id}/dns_records`, {
+        method: "POST",
+        body: JSON.stringify({ type: "TXT", name: fqdn, content: value, ttl: 60 })
+      });
+      return record.id;
+    },
+    async remove(zone, id) {
+      await this.api(`/zones/${zone.id}/dns_records/${id}`, { method: "DELETE" });
+    }
+  },
+  digitalocean: {
+    name: "DigitalOcean",
+    async api(path, init = {}) {
+      const res = await fetch(`https://api.digitalocean.com/v2${path}`, {
+        ...init,
+        headers: { Authorization: `Bearer ${env.STARCOMMS_DNS_API_TOKEN}`, "Content-Type": "application/json" }
+      });
+      if (res.status === 204) return null;
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw Object.assign(new Error(`DigitalOcean API ${path}: ${res.status} ${body.message || ""}`), { status: res.status });
+      return body;
+    },
+    async zone(domain) {
+      for (const candidate of zoneCandidates(domain)) {
+        try {
+          await this.api(`/domains/${candidate}`);
+          return { id: candidate, name: candidate };
+        } catch (err) {
+          if (err.status !== 404) throw err;
+        }
+      }
+      throw new Error(`no DigitalOcean domain found for ${domain} (token needs domain read/create/delete)`);
+    },
+    async create(zone, fqdn, value) {
+      const name = fqdn === zone.name ? "@" : fqdn.slice(0, -(zone.name.length + 1));
+      const body = await this.api(`/domains/${zone.name}/records`, {
+        method: "POST",
+        body: JSON.stringify({ type: "TXT", name, data: value, ttl: 30 })
+      });
+      return body.domain_record.id;
+    },
+    async remove(zone, id) {
+      await this.api(`/domains/${zone.name}/records/${id}`, { method: "DELETE" });
+    }
+  }
+};
+
+function zoneCandidates(domain) {
+  const labels = domain.split(".");
+  return labels.slice(0, -1).map((_, i) => labels.slice(i).join("."));
 }
 
-async function cfZoneId(domain) {
-  const labels = domain.split(".");
-  for (let i = 0; i < labels.length - 1; i++) {
-    const zones = await cfApi(`/zones?name=${labels.slice(i).join(".")}`);
-    if (zones.length) return zones[0].id;
-  }
-  throw new Error(`no Cloudflare zone found for ${domain} (check the API token's Zone:Read + DNS:Edit access)`);
+function dnsProvider() {
+  const key = String(env.STARCOMMS_DNS_PROVIDER || "cloudflare").trim().toLowerCase();
+  const provider = dnsProviders[key];
+  if (!provider) throw new Error(`unknown DNS provider "${key}" (use ${Object.keys(dnsProviders).join(" or ")})`);
+  return provider;
 }
 
 async function issueCertificate(domain) {
@@ -159,9 +220,10 @@ async function issueCertificate(domain) {
     accountKey: readFileSync(accountKeyPath)
   });
   const [key, csr] = await acme.crypto.createCsr({ commonName: domain, altNames: [domain] });
-  const zoneId = await cfZoneId(domain);
+  const provider = dnsProvider();
+  const zone = await provider.zone(domain);
   const records = new Map();
-  log("INFO", `requesting Let's Encrypt certificate for ${domain}`);
+  log("INFO", `requesting Let's Encrypt certificate for ${domain} (DNS-01 via ${provider.name} zone ${zone.name})`);
   const cert = await client.auto({
     csr,
     email: env.STARCOMMS_TLS_EMAIL || undefined,
@@ -169,16 +231,12 @@ async function issueCertificate(domain) {
     challengePriority: ["dns-01"],
     skipChallengeVerification: true,
     challengeCreateFn: async (authz, _challenge, keyAuthorization) => {
-      const record = await cfApi(`/zones/${zoneId}/dns_records`, {
-        method: "POST",
-        body: JSON.stringify({ type: "TXT", name: `_acme-challenge.${authz.identifier.value}`, content: keyAuthorization, ttl: 60 })
-      });
-      records.set(keyAuthorization, record.id);
+      records.set(keyAuthorization, await provider.create(zone, `_acme-challenge.${authz.identifier.value}`, keyAuthorization));
       await new Promise((r) => setTimeout(r, 20_000));
     },
     challengeRemoveFn: async (_authz, _challenge, keyAuthorization) => {
       const id = records.get(keyAuthorization);
-      if (id) await cfApi(`/zones/${zoneId}/dns_records/${id}`, { method: "DELETE" }).catch(() => {});
+      if (id) await provider.remove(zone, id).catch((err) => log("WARN", `could not remove challenge record: ${err.message}`));
     }
   });
   writeFileSync(resolve(TLS_DIR, "privkey.pem"), key, { mode: 0o600 });
@@ -272,7 +330,7 @@ function serveTls() {
 async function startAcme() {
   const domain = String(env.STARCOMMS_TLS_DOMAIN || "").trim().toLowerCase();
   if (!domain) throw new Error("TLS Domain is required for the acme TLS mode");
-  if (!env.STARCOMMS_CF_API_TOKEN) throw new Error("Cloudflare API Token is required for the acme TLS mode (DNS-01)");
+  if (!env.STARCOMMS_DNS_API_TOKEN) throw new Error(`DNS API Token is required for the acme TLS mode (DNS-01 via ${dnsProvider().name})`);
   if (await certNeedsRenewal(domain)) await issueCertificate(domain);
   else log("INFO", "existing certificate still valid");
   const proxy = serveTls();
