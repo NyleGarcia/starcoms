@@ -11,7 +11,7 @@
         "Port": 8787,
         "Ref": "UdpVoicePort",
         "Name": "UDP Voice Port",
-        "Description": "UDP voice router. Must equal the port in the Public URL (e.g. 8443 when using the TLS proxy on 8443)"
+        "Description": "UDP voice router. Independent of the Public URL/TLS port; clients are told this port directly. Must be reachable from the internet"
     },
     {
         "Protocol": "TCP",
