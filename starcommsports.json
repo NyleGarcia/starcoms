@@ -1,0 +1,9 @@
+[
+    {
+        "Protocol": "Both",
+        "Port": 8787,
+        "Ref": "ShardPort",
+        "Name": "Shard Port",
+        "Description": "TCP: HTTP/WebSocket control (/ws, /health). UDP: voice router"
+    }
+]

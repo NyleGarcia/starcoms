@@ -1,0 +1,138 @@
+[
+    {
+        "DisplayName": "Shard Token",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Shard:settings:1",
+        "Description": "Guild-bound shard token (scsh_...) from /star-shard-request in Discord. Requires an active Premium Shard",
+        "Keywords": "token,shard,scsh",
+        "FieldName": "ShardToken",
+        "InputType": "Password",
+        "ParamFieldName": "ShardToken",
+        "DefaultValue": "",
+        "Required": true,
+        "EnumValues": {}
+    },
+    {
+        "DisplayName": "Public URL",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Shard:settings:1",
+        "Description": "Public URL clients use to reach this shard. Must expose /ws and /health (usually HTTPS via a reverse proxy to the Shard Port)",
+        "Keywords": "public,url,host,domain",
+        "FieldName": "PublicUrl",
+        "InputType": "text",
+        "ParamFieldName": "PublicUrl",
+        "DefaultValue": "",
+        "Placeholder": "https://shard.example.com",
+        "Required": true,
+        "EnumValues": {}
+    },
+    {
+        "DisplayName": "UDP Public Host",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Shard:settings:1",
+        "Description": "Public host/IP clients send UDP voice to. Leave empty to derive from the Public URL",
+        "Keywords": "udp,voice,public,host,ip",
+        "FieldName": "UdpPublicHost",
+        "InputType": "text",
+        "ParamFieldName": "UdpPublicHost",
+        "DefaultValue": "",
+        "Placeholder": "203.0.113.10",
+        "EnumValues": {}
+    },
+    {
+        "DisplayName": "Shard Name",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Shard:settings:1",
+        "Description": "Display name for this shard",
+        "Keywords": "name",
+        "FieldName": "ShardName",
+        "InputType": "text",
+        "ParamFieldName": "ShardName",
+        "DefaultValue": "",
+        "EnumValues": {}
+    },
+    {
+        "DisplayName": "UDP Voice Enabled",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Shard:settings:1",
+        "Description": "Enable the UDP voice router on the Shard Port",
+        "Keywords": "udp,voice",
+        "FieldName": "UdpVoiceEnabled",
+        "InputType": "checkbox",
+        "ParamFieldName": "UdpVoiceEnabled",
+        "DefaultValue": "true",
+        "EnumValues": {
+            "False": "false",
+            "True": "true"
+        }
+    },
+    {
+        "DisplayName": "Archive Driver",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Shard:settings:1",
+        "Description": "Local channel archive storage",
+        "Keywords": "archive,sqlite,json",
+        "FieldName": "ArchiveDriver",
+        "InputType": "enum",
+        "ParamFieldName": "ArchiveDriver",
+        "DefaultValue": "sqlite",
+        "EnumValues": {
+            "sqlite": "SQLite (default)",
+            "json": "JSON"
+        }
+    },
+    {
+        "DisplayName": "Log Level",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Shard:settings:1",
+        "Description": "Shard log verbosity",
+        "Keywords": "log,level,debug",
+        "FieldName": "LogLevel",
+        "InputType": "enum",
+        "ParamFieldName": "LogLevel",
+        "DefaultValue": "info",
+        "EnumValues": {
+            "debug": "Debug",
+            "info": "Info (default)",
+            "warn": "Warn",
+            "error": "Error"
+        }
+    },
+    {
+        "DisplayName": "Central URL",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Advanced:build:2",
+        "Description": "Star Comms central API. Do not change unless told to",
+        "Keywords": "central,api,url",
+        "FieldName": "CentralUrl",
+        "InputType": "text",
+        "ParamFieldName": "CentralUrl",
+        "DefaultValue": "https://api.star-comms.org",
+        "EnumValues": {}
+    },
+    {
+        "DisplayName": "Shard Version",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Advanced:build:2",
+        "Description": "Shard script version to download from star-comms.org. Change, then Update the instance to upgrade",
+        "Keywords": "version,shard,update",
+        "FieldName": "ShardVersion",
+        "InputType": "text",
+        "ParamFieldName": "ShardVersion",
+        "DefaultValue": "1.0.116",
+        "EnumValues": {}
+    },
+    {
+        "DisplayName": "Bun Version",
+        "Category": "Star Comms:radio",
+        "Subcategory": "Advanced:build:2",
+        "Description": "Bun release to install, format v1.4.4. Empty = latest",
+        "Keywords": "bun,version",
+        "FieldName": "BunVersion",
+        "InputType": "text",
+        "ParamFieldName": "BunVersion",
+        "DefaultValue": "",
+        "Placeholder": "v1.4.4",
+        "EnumValues": {}
+    }
+]

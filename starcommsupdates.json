@@ -1,0 +1,18 @@
+[
+    {
+        "UpdateStageName": "Bun Download",
+        "UpdateSourcePlatform": "Linux",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "/bin/bash",
+        "UpdateSourceArgs": "-c \"export BUN_INSTALL='{{$FullRootDir}}bun'; cd starcomms && mkdir -p bun/bin shard && BunVersion='{{BunVersion}}'; if [ -z $BunVersion ]; then BunVersion=$(wget -qO- https://api.github.com/repos/oven-sh/bun/releases/latest | jq -r .tag_name | sed s/^bun-//); fi; case $BunVersion in v[0-9]*.[0-9]*.[0-9]*) ;; *) echo Invalid Bun version: $BunVersion; exit 1;; esac; Installed=$( [ -x bun/bin/bun ] && bun/bin/bun --version ); if [ v$Installed = $BunVersion ]; then echo Bun $BunVersion already installed; exit 0; fi; case $(uname -m) in aarch64|arm64) Target=linux-aarch64;; *) Target=linux-x64; grep -q avx2 /proc/cpuinfo || Target=linux-x64-baseline;; esac; wget -qO bun.zip https://github.com/oven-sh/bun/releases/download/bun-$BunVersion/bun-$Target.zip && unzip -oq bun.zip -d bun/bin && mv -f bun/bin/bun-$Target/bun bun/bin/bun && chmod +x bun/bin/bun && rm -rf bun/bin/bun-$Target bun.zip && echo Bun $BunVersion installed\"",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "Star Comms Shard Download",
+        "UpdateSourcePlatform": "Linux",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "/bin/bash",
+        "UpdateSourceArgs": "-c \"cd starcomms/shard && wget -qO starcomms-bun-shard-linux.mjs.tmp 'https://star-comms.org/downloads/shards/starcomms-bun-shard-linux.mjs?v={{ShardVersion}}' && mv -f starcomms-bun-shard-linux.mjs.tmp starcomms-bun-shard-linux.mjs && echo Star Comms shard {{ShardVersion}} downloaded\"",
+        "SkipOnFailure": false
+    }
+]
