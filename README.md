@@ -23,7 +23,6 @@ DOMAIN=amp.example.com; TLS_PORT=8443; SHARD_PORT=8787
 sudo tee /etc/nginx/conf.d/starcomms-tls.conf >/dev/null <<NGINX
 server {
     listen ${TLS_PORT} ssl;
-    http2 on;
     server_name ${DOMAIN};
     ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
