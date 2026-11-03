@@ -1,24 +1,12 @@
-# Star Comms shard — Docker + CubeCoders AMP
+# Star Comms Shard — CubeCoders AMP template
 
-Self-hosted [Star Comms](https://star-comms.org/self-hosted-setup.html) shard, run with Bun.
+Generic-module template for a self-hosted [Star Comms](https://star-comms.org/self-hosted-setup.html) shard, run with Bun. Linux only. Follows the CubeCoders AMPTemplates format (based on the upstream Bun App Runner template).
 
-Prereqs: active Premium Shard, Star Comms bot in your Discord, `scsh_...` token from `/star-shard-request`, a public URL (HTTPS reverse proxy → port 8787, must serve `/ws` and `/health`), and TCP+UDP 8787 open.
+Prereqs: active Premium Shard, Star Comms bot in your Discord, `scsh_...` token from `/star-shard-request`, a public URL (HTTPS reverse proxy → port 8787, must serve `/ws` and `/health`), TCP+UDP 8787 open.
 
-> License: the shard script is proprietary ([license](https://star-comms.org/license.html)). Nothing here bundles it — both setups download it from star-comms.org at install/start. Don't push a built image or submit the AMP template publicly without written permission from Star-Comms LLC.
+> The shard script is proprietary ([license](https://star-comms.org/license.html)) and is not included here. The template downloads it from star-comms.org during Update.
 
-## Docker
-
-```bash
-cd docker && cp .env.example .env   # fill in token + public URL
-docker compose up -d --build
-docker compose logs -f
-```
-
-Data (archive sqlite, local config, logs) persists in the `shard-data` volume at `/data`. Upgrade: bump `STARCOMMS_SHARD_VERSION` in `.env`, then `docker compose up -d`. Healthcheck hits `/health`.
-
-## AMP (Generic module)
-
-Template files in the repo root (`starcomms*.kvp/json`) follow the CubeCoders AMPTemplates format (based on the upstream Bun App Runner template). Linux only.
+## Install
 
 1. ADS → Settings → Instance Deployment → Configuration Repositories: add `NyleGarcia/starcoms:main`.
 2. Click Fetch latest (or restart ADS) so it picks up the template.
