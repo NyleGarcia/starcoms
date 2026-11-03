@@ -20,8 +20,8 @@ Data (archive sqlite, local config, logs) persists in the `shard-data` volume at
 
 Template files in the repo root (`starcomms*.kvp/json`) follow the CubeCoders AMPTemplates format (based on the upstream Bun App Runner template). Linux only.
 
-1. AMP pulls config repos without auth, so a **private** repo can't be added there. Instead copy the 5 `starcomms*` files into the ADS instance's deployment templates folder (e.g. `~/.ampdata/instances/ADS01/Plugins/ADSModule/GenericTemplates/` — check your AMP version's path).
-2. ADS → Settings → Instance Deployment → Fetch latest (or restart ADS) so it picks up the template.
+1. ADS → Settings → Instance Deployment → Configuration Repositories: add `NyleGarcia/starcoms:main`.
+2. Click Fetch latest (or restart ADS) so it picks up the template.
 3. Create instance → "Star Comms Shard". Set Shard Token + Public URL under Configuration → Star Comms, then **Update**, then **Start**.
 
 Update stages install Bun (x64/x64-baseline/aarch64, version pin optional) and download the shard script for the configured Shard Version. Auto-update in the shard is forced off so AMP controls versions.
