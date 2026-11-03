@@ -2,7 +2,7 @@
 
 Generic-module template for a self-hosted [Star Comms](https://star-comms.org/self-hosted-setup.html) shard, run with Bun. Linux only. Follows the CubeCoders AMPTemplates format (based on the upstream Bun App Runner template).
 
-Prereqs: active Premium Shard, Star Comms bot in your Discord, `scsh_...` token from `/star-shard-request`, a public URL (HTTPS reverse proxy → port 8787, must serve `/ws` and `/health`), TCP+UDP 8787 open.
+Prereqs: active Premium Shard, Star Comms bot in your Discord, `scsh_...` token from `/star-shard-request`, TCP+UDP 8787 open. Public URL can be plain `http://your-host:8787` (simplest) or `https://your-domain` behind a TLS reverse proxy.
 
 > The shard script is proprietary ([license](https://star-comms.org/license.html)) and is not included here. The template downloads it from star-comms.org during Update.
 
