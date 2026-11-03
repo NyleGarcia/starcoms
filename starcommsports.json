@@ -12,5 +12,12 @@
         "Ref": "UdpVoicePort",
         "Name": "UDP Voice Port",
         "Description": "UDP voice router. Must equal the port in the Public URL (e.g. 8443 when using the TLS proxy on 8443)"
+    },
+    {
+        "Protocol": "TCP",
+        "Port": 8443,
+        "Ref": "TlsPort",
+        "Name": "TLS Port",
+        "Description": "HTTPS/WSS port served by the built-in TLS proxy (Let's Encrypt mode only)"
     }
 ]

@@ -16,14 +16,13 @@
         "DisplayName": "Public URL",
         "Category": "Star Comms:radio",
         "Subcategory": "Shard:settings:1",
-        "Description": "Public URL clients use to reach this shard (must serve /ws and /health). Either plain http://your-host:8787 (no proxy, unencrypted) or https://your-domain via a TLS reverse proxy to the Shard Port. Path prefixes are ignored (origin only)",
+        "Description": "Public URL clients use to reach this shard (origin only, no path). TLS Mode Off: http://your-host:8787. Cloudflare Tunnel: the tunnel's https:// hostname. Quick Tunnel and Let's Encrypt: leave empty, it's filled in automatically",
         "Keywords": "public,url,host,domain",
         "FieldName": "PublicUrl",
         "InputType": "text",
         "ParamFieldName": "PublicUrl",
         "DefaultValue": "",
         "Placeholder": "http://your-host:8787",
-        "Required": true,
         "EnumValues": {}
     },
     {
@@ -99,9 +98,75 @@
         }
     },
     {
+        "DisplayName": "TLS Mode",
+        "Category": "Star Comms:radio",
+        "Subcategory": "TLS:lock:2",
+        "Description": "How to serve HTTPS. Off = plain HTTP. Quick Tunnel = free Cloudflare tunnel with a random https URL each start, no account (testing). Cloudflare Tunnel = your own tunnel token and hostname. Let's Encrypt = real cert for your domain via Cloudflare DNS (choosing it accepts the Let's Encrypt terms), served on the TLS Port. Run Update after changing",
+        "Keywords": "tls,ssl,https,certificate,cloudflare,tunnel,letsencrypt,certbot",
+        "FieldName": "TlsMode",
+        "InputType": "enum",
+        "ParamFieldName": "TlsMode",
+        "DefaultValue": "off",
+        "EnumValues": {
+            "off": "Off (plain HTTP)",
+            "quick": "Cloudflare Quick Tunnel (no account)",
+            "cloudflare": "Cloudflare Tunnel (token)",
+            "acme": "Let's Encrypt (Cloudflare DNS)"
+        }
+    },
+    {
+        "DisplayName": "Cloudflare Tunnel Token",
+        "Category": "Star Comms:radio",
+        "Subcategory": "TLS:lock:2",
+        "Description": "Cloudflare Tunnel mode: token from Zero Trust > Networks > Tunnels > Create (cloudflared). Add a public hostname routing to http://localhost:<Shard Port>, and set Public URL to https://that-hostname",
+        "Keywords": "cloudflare,tunnel,token",
+        "FieldName": "CloudflareTunnelToken",
+        "InputType": "Password",
+        "ParamFieldName": "CloudflareTunnelToken",
+        "DefaultValue": "",
+        "EnumValues": {}
+    },
+    {
+        "DisplayName": "TLS Domain",
+        "Category": "Star Comms:radio",
+        "Subcategory": "TLS:lock:2",
+        "Description": "Let's Encrypt mode: domain for the certificate. Its DNS must be on Cloudflare and point at this host",
+        "Keywords": "tls,domain,certificate",
+        "FieldName": "TlsDomain",
+        "InputType": "text",
+        "ParamFieldName": "TlsDomain",
+        "DefaultValue": "",
+        "Placeholder": "amp.example.com",
+        "EnumValues": {}
+    },
+    {
+        "DisplayName": "Cloudflare API Token",
+        "Category": "Star Comms:radio",
+        "Subcategory": "TLS:lock:2",
+        "Description": "Let's Encrypt mode: Cloudflare API token with Zone:Read and DNS:Edit for the TLS Domain's zone (used only to prove domain ownership via a TXT record)",
+        "Keywords": "cloudflare,api,token,dns",
+        "FieldName": "CloudflareApiToken",
+        "InputType": "Password",
+        "ParamFieldName": "CloudflareApiToken",
+        "DefaultValue": "",
+        "EnumValues": {}
+    },
+    {
+        "DisplayName": "Let's Encrypt Email",
+        "Category": "Star Comms:radio",
+        "Subcategory": "TLS:lock:2",
+        "Description": "Let's Encrypt mode: optional contact email for expiry notices",
+        "Keywords": "email,letsencrypt",
+        "FieldName": "TlsEmail",
+        "InputType": "text",
+        "ParamFieldName": "TlsEmail",
+        "DefaultValue": "",
+        "EnumValues": {}
+    },
+    {
         "DisplayName": "Central URL",
         "Category": "Star Comms:radio",
-        "Subcategory": "Advanced:build:2",
+        "Subcategory": "Advanced:build:3",
         "Description": "Star Comms central API. Do not change unless told to",
         "Keywords": "central,api,url",
         "FieldName": "CentralUrl",
@@ -113,7 +178,7 @@
     {
         "DisplayName": "Shard Version",
         "Category": "Star Comms:radio",
-        "Subcategory": "Advanced:build:2",
+        "Subcategory": "Advanced:build:3",
         "Description": "Shard script version to download from star-comms.org. Change, then Update the instance to upgrade",
         "Keywords": "version,shard,update",
         "FieldName": "ShardVersion",
@@ -125,7 +190,7 @@
     {
         "DisplayName": "Bun Version",
         "Category": "Star Comms:radio",
-        "Subcategory": "Advanced:build:2",
+        "Subcategory": "Advanced:build:3",
         "Description": "Bun release to install, format v1.4.4. Empty = latest",
         "Keywords": "bun,version",
         "FieldName": "BunVersion",

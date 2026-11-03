@@ -14,37 +14,17 @@ Prereqs: active Premium Shard, Star Comms bot in your Discord, `scsh_...` token 
 
 Update stages install Bun (x64/x64-baseline/aarch64, version pin optional) and download the shard script for the configured Shard Version. Auto-update in the shard is forced off so AMP controls versions.
 
-## TLS (optional)
+## TLS (optional, no host setup)
 
-AMP has no built-in TLS for an instance's own ports; its HTTPS only covers the panel. If your panel already runs behind nginx with a Let's Encrypt cert (the `ampinstmgr setupnginx` setup), reuse that cert on a second port. Run this once on the AMP host, setting `DOMAIN` to your panel domain:
+Choose **TLS Mode** under Configuration → Star Comms → TLS, click **Update**, then **Start**. Nothing on the host changes: no nginx, no certbot. The template's launcher (`starcomms-launcher.mjs`, downloaded during Update) handles it.
 
-```bash
-DOMAIN=amp.example.com; TLS_PORT=8443; SHARD_PORT=8787
-sudo tee /etc/nginx/conf.d/starcomms-tls.conf >/dev/null <<NGINX
-server {
-    listen ${TLS_PORT} ssl;
-    server_name ${DOMAIN};
-    ssl_certificate     /etc/letsencrypt/live/${DOMAIN}/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/${DOMAIN}/privkey.pem;
-    location / {
-        proxy_pass http://127.0.0.1:${SHARD_PORT};
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host \$host;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-        proxy_read_timeout 3600s;
-    }
-}
-NGINX
-sudo nginx -t && sudo systemctl reload nginx
-sudo ufw allow ${TLS_PORT}/tcp; sudo ufw allow ${TLS_PORT}/udp
-```
+| Mode | You provide | Public URL | Notes |
+|---|---|---|---|
+| Off | nothing | `http://your-host:8787` | Plain HTTP. Simplest |
+| Cloudflare Quick Tunnel | nothing | auto (`https://*.trycloudflare.com`) | Free, no account. The URL changes every start (the shard re-registers itself). Cloudflare says it's for testing, with no uptime guarantee |
+| Cloudflare Tunnel | Tunnel token | `https://your-tunnel-hostname` | Zero Trust → Networks → Tunnels → create (cloudflared), copy the token, add a public hostname → `http://localhost:8787`. Fixed URL; needs no TCP port forward |
+| Let's Encrypt | TLS Domain + Cloudflare API token | auto (`https://domain:<TLS Port>`) | Real cert issued and renewed automatically via the DNS-01 check. Token needs Zone:Read + DNS:Edit. Served on the TLS Port (default 8443). Choosing it accepts the Let's Encrypt terms |
 
-Then in AMP:
-- **Public URL** = `https://amp.example.com:8443`
-- **UDP Voice Port** = `8443` (the shard takes the UDP port from the Public URL; nginx holds only TCP 8443, so there's no clash)
-- **Shard Port** stays `8787`, used only internally by nginx. You can close TCP 8787 in the firewall.
+UDP voice never goes through TLS or a tunnel: forward the **UDP Voice Port** to the host in every mode. In tunnel modes the launcher detects the public IP for UDP automatically (override it with UDP Public Host). In Let's Encrypt mode, set UDP Voice Port to the same number as the TLS Port.
 
-Restart the instance and check that `curl https://amp.example.com:8443/health` returns `ok:true`. certbot's existing renewal keeps the cert fresh; nginx picks up the new cert on reload.
+Let's Encrypt with Cloudflare DNS is the only automatic option because the other checks need port 80/443, which the AMP panel's nginx usually holds and which AMP instances can't bind anyway.

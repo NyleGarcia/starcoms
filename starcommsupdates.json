@@ -14,5 +14,31 @@
         "UpdateSourceData": "/bin/bash",
         "UpdateSourceArgs": "-c \"cd starcomms/shard && wget -qO starcomms-bun-shard-linux.mjs.tmp 'https://star-comms.org/downloads/shards/starcomms-bun-shard-linux.mjs?v={{ShardVersion}}' && mv -f starcomms-bun-shard-linux.mjs.tmp starcomms-bun-shard-linux.mjs && echo Star Comms shard {{ShardVersion}} downloaded\"",
         "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "Launcher Download",
+        "UpdateSourcePlatform": "Linux",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "/bin/bash",
+        "UpdateSourceArgs": "-c \"cd starcomms/shard && wget -qO starcomms-launcher.mjs.tmp https://raw.githubusercontent.com/NyleGarcia/starcoms/main/starcomms-launcher.mjs && mv -f starcomms-launcher.mjs.tmp starcomms-launcher.mjs && echo Launcher downloaded\"",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "cloudflared Download",
+        "UpdateSourcePlatform": "Linux",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "/bin/bash",
+        "UpdateSourceArgs": "-c \"Mode='{{TlsMode}}'; if [ $Mode != quick ] && [ $Mode != cloudflare ]; then echo cloudflared not needed; exit 0; fi; cd starcomms && mkdir -p bin && case $(uname -m) in aarch64|arm64) A=arm64;; *) A=amd64;; esac; wget -qO bin/cloudflared.tmp https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$A && mv -f bin/cloudflared.tmp bin/cloudflared && chmod +x bin/cloudflared && bin/cloudflared --version\"",
+        "SkipOnFailure": false
+    },
+    {
+        "UpdateStageName": "Let's Encrypt Client Install",
+        "UpdateSourcePlatform": "Linux",
+        "UpdateSource": "Executable",
+        "UpdateSourceData": "/bin/bash",
+        "UpdateSourceArgs": "-c \"cd starcomms/shard && export BUN_INSTALL='{{$FullRootDir}}bun' && ../bun/bin/bun add acme-client@5\"",
+        "UpdateSourceConditionSetting": "TlsMode",
+        "UpdateSourceConditionValue": "acme",
+        "SkipOnFailure": false
     }
 ]

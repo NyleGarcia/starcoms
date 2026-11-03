@@ -35,10 +35,10 @@ App.ExecutableLinux=bun/bin/bun
 App.WorkingDir=shard
 App.LinuxCommandLineArgs=
 App.WindowsCommandLineArgs=
-App.CommandLineArgs=run starcomms-bun-shard-linux.mjs
+App.CommandLineArgs=run starcomms-launcher.mjs
 App.UseLinuxIOREDIR=False
 App.AppSettings={}
-App.EnvironmentVariables={"BUN_INSTALL":"{{$FullRootDir}}bun","PATH":"{{$FullRootDir}}bun/bin:%PATH%","STARCOMMS_CENTRAL_URL":"{{CentralUrl}}","STARCOMMS_SHARD_TOKEN":"{{ShardToken}}","STARCOMMS_SHARD_PUBLIC_URL":"{{PublicUrl}}","STARCOMMS_SHARD_UDP_PUBLIC_HOST":"{{UdpPublicHost}}","STARCOMMS_SHARD_NAME":"{{ShardName}}","STARCOMMS_SHARD_PORT":"{{$ShardPort}}","STARCOMMS_SHARD_UDP_VOICE_ENABLED":"{{UdpVoiceEnabled}}","STARCOMMS_SHARD_UDP_BIND":"{{$ApplicationIPBinding}}:{{$UdpVoicePort}}","STARCOMMS_SHARD_ARCHIVE_DRIVER":"{{ArchiveDriver}}","STARCOMMS_SHARD_AUTO_UPDATE":"false","STARCOMMS_LOG_LEVEL":"{{LogLevel}}"}
+App.EnvironmentVariables={"BUN_INSTALL":"{{$FullRootDir}}bun","PATH":"{{$FullRootDir}}bun/bin:%PATH%","STARCOMMS_CENTRAL_URL":"{{CentralUrl}}","STARCOMMS_SHARD_TOKEN":"{{ShardToken}}","STARCOMMS_SHARD_PUBLIC_URL":"{{PublicUrl}}","STARCOMMS_SHARD_UDP_PUBLIC_HOST":"{{UdpPublicHost}}","STARCOMMS_SHARD_NAME":"{{ShardName}}","STARCOMMS_SHARD_PORT":"{{$ShardPort}}","STARCOMMS_SHARD_UDP_VOICE_ENABLED":"{{UdpVoiceEnabled}}","STARCOMMS_SHARD_UDP_BIND":"{{$ApplicationIPBinding}}:{{$UdpVoicePort}}","STARCOMMS_SHARD_ARCHIVE_DRIVER":"{{ArchiveDriver}}","STARCOMMS_SHARD_AUTO_UPDATE":"false","STARCOMMS_LOG_LEVEL":"{{LogLevel}}","STARCOMMS_TLS_MODE":"{{TlsMode}}","STARCOMMS_TLS_PORT":"{{$TlsPort}}","STARCOMMS_TLS_DOMAIN":"{{TlsDomain}}","STARCOMMS_TLS_EMAIL":"{{TlsEmail}}","STARCOMMS_CF_TUNNEL_TOKEN":"{{CloudflareTunnelToken}}","STARCOMMS_CF_API_TOKEN":"{{CloudflareApiToken}}"}
 App.CommandLineParameterFormat=-{0}={1}
 App.CommandLineParameterDelimiter=
 App.ExitMethod=OS_CLOSE
