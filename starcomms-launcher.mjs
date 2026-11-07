@@ -70,9 +70,20 @@ function shardEnv(overrides) {
   return out;
 }
 
+// The Bun shard calls Bun.serve() without idleTimeout, so Bun's 10s default cuts its
+// /api/v1/stream SSE between 25s pings. Preload a shim that supplies a default
+// (only when the shard doesn't set one). Override with STARCOMMS_SHARD_IDLE_TIMEOUT (0-255, 0 = off).
+const SERVE_SHIM = resolve("starcomms-serve-shim.mjs");
+function writeServeShim() {
+  const raw = Number(env.STARCOMMS_SHARD_IDLE_TIMEOUT ?? 60);
+  const idle = Number.isInteger(raw) && raw >= 0 && raw <= 255 ? raw : 60;
+  writeFileSync(SERVE_SHIM, `const serve = Bun.serve;\nBun.serve = (opts) => serve.call(Bun, { idleTimeout: ${idle}, ...opts });\n`);
+}
+
 function startShard(overrides = {}) {
   log("INFO", `starting shard (tls mode: ${mode})`);
-  return run("shard", process.execPath, ["run", SHARD_SCRIPT], shardEnv(overrides));
+  writeServeShim();
+  return run("shard", process.execPath, ["run", "--preload", SERVE_SHIM, SHARD_SCRIPT], shardEnv(overrides));
 }
 
 // Tunnels carry only TCP; UDP voice must still reach this host directly.

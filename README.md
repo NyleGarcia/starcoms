@@ -12,6 +12,8 @@ Prereqs: active Premium Shard, Star Comms bot in your Discord, `scsh_...` token 
 2. Click Fetch latest (or restart ADS) so it picks up the template.
 3. Create instance → "Star Comms Shard". Set Shard Token + Public URL under Configuration → Star Comms, then **Update**, then **Start**.
 
+The launcher preloads a small shim that gives the shard's `Bun.serve()` an `idleTimeout` of 60s (Bun's 10s default otherwise drops the Owner API `/api/v1/stream` SSE between its 25s pings). Override with env `STARCOMMS_SHARD_IDLE_TIMEOUT` (0–255, 0 = off).
+
 Update stages install Bun (x64/x64-baseline/aarch64, version pin optional) and download the shard script for the configured Shard Version. Auto-update in the shard is forced off so AMP controls versions.
 
 ## TLS (optional, no host setup)
