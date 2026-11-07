@@ -265,6 +265,8 @@ function serveTls() {
     port: tlsPort,
     hostname: env.STARCOMMS_TLS_BIND || "0.0.0.0",
     tls: readTls(),
+    // Bun's default 10s HTTP idle timeout would cut SSE streams between the shard's 25s pings.
+    idleTimeout: 120,
     async fetch(req, server) {
       const url = new URL(req.url);
       const clientIp = server.requestIP(req)?.address || "";
@@ -281,16 +283,37 @@ function serveTls() {
       for (const k of hopByHop) headers.delete(k);
       headers.set("x-forwarded-for", clientIp);
       headers.set("x-forwarded-proto", "https");
+      let res;
       try {
-        return await fetch(`http://${upstream}${url.pathname}${url.search}`, {
+        res = await fetch(`http://${upstream}${url.pathname}${url.search}`, {
           method: req.method,
           headers,
           body: ["GET", "HEAD"].includes(req.method) ? undefined : req.body,
-          redirect: "manual"
+          redirect: "manual",
+          signal: req.signal
         });
       } catch {
         return new Response("shard unavailable", { status: 502 });
       }
+      if (!res.body || !res.headers.get("content-type")?.startsWith("text/event-stream")) return res;
+      // SSE: the shard can drop the stream mid-body (e.g. its own idle timeout); end it
+      // cleanly so EventSource reconnects instead of Bun logging an uncaught ECONNRESET.
+      const reader = res.body.getReader();
+      const body = new ReadableStream({
+        async pull(controller) {
+          try {
+            const { done, value } = await reader.read();
+            if (done) controller.close();
+            else controller.enqueue(value);
+          } catch {
+            try { controller.close(); } catch {}
+          }
+        },
+        cancel(reason) {
+          reader.cancel(reason).catch(() => {});
+        }
+      });
+      return new Response(body, { status: res.status, statusText: res.statusText, headers: res.headers });
     },
     websocket: {
       open(ws) {
@@ -311,8 +334,10 @@ function serveTls() {
         if (ws.data.queue) ws.data.queue.push(msg);
         else if (ws.data.up?.readyState === WebSocket.OPEN) ws.data.up.send(msg);
       },
-      close(ws) {
-        ws.data.up?.close();
+      close(ws, code, reason) {
+        // Forward the client's close code (client-side close() only accepts 1000 and 3000-4999).
+        const fwd = code === 1000 || (code >= 3000 && code <= 4999) ? code : 1000;
+        try { ws.data.up?.close(fwd, reason); } catch { ws.data.up?.close(); }
       }
     }
   };
